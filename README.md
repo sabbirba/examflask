@@ -68,4 +68,12 @@ templates/
 ## Customization
 
 - To change the location of the exam files, update the paths in [`serve_pdf`](app.py) and [`serve_json`](app.py).
-- Frontend logic and UI are in the
+- Frontend logic and UI are in the `static/js/` and `static/css/` folders.
+
+## License
+
+MIT License
+
+---
+
+**Note:** This project is not affiliated with BRAC University. For official schedules, always refer to the university's official sources.
