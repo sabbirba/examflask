@@ -81,6 +81,5 @@ MIT License
 ---
 
 <div align="center" style="margin-top: 2em; font-size: 1.1em;">
-  <strong>Developed by <a href="https://github.com/sabbirba" target="_blank">Sabbir Bin Abbas</a></strong><br>
-  <em>All copyrights &copy; <a href="https://github.com/sabbirba" target="_blank">Sabbir Bin Abbas</a>. All rights reserved.</em>
+  <em><strong>Developed by</strong> & All copyrights &copy; <a href="https://github.com/sabbirba" target="_blank">Sabbir Bin Abbas</a>.</strong> All rights reserved.</em>
 </div>
