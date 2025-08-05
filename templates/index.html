@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BRACU Exam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css"
+      integrity="sha512-tze+o/xG0w3yxxE8xe32piisVvI/LfcEuf6LW7lFLUxhio2SfFQ9mQ0TqB0avvonmxUXT7/l8+fnWkR03u85fQ=="
+      crossorigin="anonymous"
+    />
+    <!-- Add favicon -->
+    <link
+      href="data:image/x-icon;base64,AAABAAEAEBACAAAAAACwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA/4QAAMxjAADMYwAA/GMAAMxjAADMawAAMHcAADBjAAAAAAAA+AAAAMBmAADAPAAA+BgAAMAYAADAPAAA+GYAAAAAAAAznAAAM5wAAAOcAAAznAAAM5QAAM+IAADPnAAA//8AAAf/AAA/mQAAP8MAAAfnAAA/5wAAP8MAAAeZAAD//wAA"
+      rel="icon"
+      type="image/x-icon"
+    />
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+    <style>
+      /* Additional inline styles */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+      .toast {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        min-width: 240px;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transform: translateX(100%);
+        animation: slideIn 0.2s forwards, fadeOut 0.5s 2s forwards;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      @keyframes slideIn {
+        to {
+          transform: translateX(0);
+        }
+      }
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+        }
+      }
+      .success {
+        background-color: rgba(52, 211, 153, 0.9);
+        color: whitesmoke;
+      }
+      .error {
+        background-color: rgba(239, 68, 68, 0.9);
+        color: whitesmoke;
+      }
+      .info {
+        background-color: rgba(59, 130, 246, 0.9);
+        color: whitesmoke;
+      }
+      .custom-select {
+        position: relative;
+      }
+      .custom-select .options {
+        display: none;
+        position: absolute;
+        background-color: whitesmoke;
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 100%;
+      }
+      .custom-select .option {
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .custom-select .option:hover {
+        background-color: transparent !important;
+      }
+      @media (max-width: 640px) {
+        input,
+        button,
+        select {
+          font-size: 16px;
+          height: 44px;
+        }
+        .table-container {
+          margin: 0 -16px;
+        }
+      }
+      .section-input-container {
+        position: relative;
+        width: 100%;
+      }
+      body {
+        padding-bottom: 50px;
+        color: #e5e7eb !important;
+        background-color: #18181b !important;
+      }
+      html {
+        background-color: #18181b !important;
+      }
+      .input-row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 8px;
+        gap: 4px;
+      }
+      .input-row .course-code {
+        flex: 2;
+      }
+      .input-row .section {
+        flex: 1;
+      }
+      .input-row .add-course {
+        flex: 1;
+      }
+      .dropdown {
+        position: absolute;
+        background: whitesmokesmoke;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        z-index: 9999;
+        max-height: 12rem;
+        overflow-y: auto;
+        width: 100%;
+        color: #1f2937;
+      }
+      .dropdown-option {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #1f2937;
+      }
+      .dropdown-option:hover {
+        background-color: transparent !important;
+      }
+      .dropdown-option.active {
+        background-color: transparent !important;
+      }
+      .dropdown-option.disabled {
+        color: #9ca3af;
+        cursor: default;
+      }
+      .dropdown::-webkit-scrollbar {
+        width: 6px;
+      }
+      .dropdown::-webkit-scrollbar-track {
+        background: #f3f4f6;
+      }
+      .dropdown::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 3px;
+      }
+      .routine-table,
+      .routine-table th,
+      .routine-table td,
+      .routine-table tr {
+        color: #e5e7eb !important;
+        background-color: #52525b !important;
+      }
+      .routine-table {
+        background-color: transparent !important;
+        color: #e5e7eb;
+        border: 1px solid #52525b;
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 16px;
+      }
+      .routine-table th,
+      .routine-table td {
+        background-color: transparent !important;
+        border-bottom: 1px solid #52525b;
+        padding: 12px 16px;
+        text-align: center;
+        vertical-align: middle;
+      }
+      .routine-table th {
+        font-weight: bold;
+        background-color: #18181b;
+      }
+      .routine-table tr {
+        background-color: transparent !important;
+      }
+      /* More padding at the bottom for fixed footer */
+      body {
+        padding-bottom: 120px !important;
+      }
+      #capture-area {
+        margin-bottom: 50px;
+      }
+      #screenshot-btn,
+      #cross-check-btn {
+        margin-bottom: 5px;
+      }
+      #cross-check-modal {
+        transition: opacity 0.3s ease-in-out;
+        background-color: transparent !important;
+      }
+      #pdf-container canvas {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+      }
+      @media (max-width: 640px) {
+        #cross-check-modal .max-w-3xl {
+          width: 95%;
+          max-height: 85vh;
+        }
+        #pdf-container {
+          padding: 0.5rem;
+        }
+        #pdf-container canvas {
+          width: 100% !important;
+          height: auto !important;
+        }
+      }
+    </style>
+    <script>
+      window.plausible =
+        window.plausible ||
+        function () {
+          (window.plausible.q = window.plausible.q || []).push(arguments);
+        };
+    </script>
+  </head>
+  <body
+    class="bg-gray-600 text-whitesmoke flex flex-col items-center justify-center min-h-screen p-4 sm:p-6"
+    style="
+      background-color: transparent;
+      background-size: cover;
+      background-attachment: fixed;
+    "
+  >
+    <div id="toast-container" class="toast-container"></div>
+    <div id="capture-area" class="flex flex-col items-center w-full max-w-auto">
+      <h1
+        id="schedule-title"
+        class="text-xl font-bold text-whitesmoke-600 text-center"
+      ></h1>
+      <br />
+      <div id="course-inputs" class="w-full rounded-lg mb-4">
+        <div class="input-row">
+          <input
+            type="text"
+            id="course-code"
+            name="course-code"
+            placeholder="Course Code"
+            class="course-code bg-whitesmoke text-gray-800 p-3 rounded-lg mb-2 w-full text-center"
+            autocomplete="on"
+          />
+          <input
+            type="text"
+            id="section"
+            name="section"
+            placeholder="Sec"
+            class="section bg-whitesmoke text-gray-800 p-3 rounded-lg mb-2 w-full text-center"
+            autocomplete="on"
+          />
+          <button
+            class="add-course text-whitesmoke-600 font-bold p-3 rounded-lg mb-2 w-full flex items-center justify-center hover:bg-gray-900 transition"
+            title="Add Course"
+            type="button"
+          >
+            <i class="fas fa-plus mr-2"></i>Add
+          </button>
+        </div>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <button id="add-more-btn"></button>
+        <button
+          id="reset-btn"
+          class="px-3 py-2 text-whitesmoke-500 hover:bg-red-600 hover:bg rounded-full transition flex items-center justify-center"
+          type="button"
+          title="Reset routine"
+        >
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <div class="w-full overflow-x-auto table-container">
+        <table id="exam-schedule" class="routine-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Course</th>
+              <th>Section</th>
+              <th>Room</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-body">
+            <!-- Exam schedule rows will be added here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 justify-center">
+      <button
+        id="screenshot-btn"
+        class="text-whitesmoke font-bold py-3 px-6 hover:rounded-lg mt-4 flex items-center justify-center hover:bg-gray-900 transition"
+      >
+        <i class="fas fa-save mr-2"></i>Save
+      </button>
+      <button
+        id="cross-check-btn"
+        class="text-whitesmoke font-bold py-3 px-6 hover:rounded-lg mt-2 sm:mt-4 flex items-center justify-center hover:bg-gray-900 transition"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>Check
+      </button>
+    </div>
+    <!-- Cross Check Modal -->
+    <div
+      id="cross-check-modal"
+      class="fixed inset-0 bg-opacity-80 z-50 hidden flex items-center justify-center"
+    >
+      <div
+        class="bg-gray-900 rounded max-w-auto max-w-auto max-h-[85vh] overflow-y-auto overscroll-contain relative"
+      >
+        <div id="pdf-container" class="p-3 sm:p-4"></div>
+      </div>
+      <button
+        id="close-modal-btn"
+        class="absolute left-1/2 -translate-x-1/2 top-2 bg-transparent hover:bg-gray-900 hover:rounded-lg p-2 transition"
+        aria-label="Close"
+        type="button"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      // Initialize PDF.js worker
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        console.log("PDF.js initialized with worker");
+      }
+      // --- Routine Table LocalStorage Logic ---
+      function saveRoutineToLocalStorage() {
+        const rows = Array.from(document.querySelectorAll("#schedule-body tr"));
+        const data = rows.map((row) =>
+          Array.from(row.children).map((cell) => cell.textContent)
+        );
+        localStorage.setItem("routineTable", JSON.stringify(data));
+      }
+      function loadRoutineFromLocalStorage() {
+        const data = JSON.parse(localStorage.getItem("routineTable") || "[]");
+        const tbody = document.getElementById("schedule-body");
+        tbody.innerHTML = "";
+        data.forEach((cols) => {
+          const tr = document.createElement("tr");
+          cols.forEach((text) => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+      }
+      function clearRoutineLocalStorage() {
+        localStorage.removeItem("routineTable");
+      }
+      const scheduleBody = document.getElementById("schedule-body");
+      const observer = new MutationObserver(saveRoutineToLocalStorage);
+      observer.observe(scheduleBody, { childList: true, subtree: false });
+      window.addEventListener("DOMContentLoaded", loadRoutineFromLocalStorage);
+      document
+        .getElementById("reset-btn")
+        .addEventListener("click", function () {
+          document.getElementById("schedule-body").innerHTML = "";
+          clearRoutineLocalStorage();
+        });
+    </script>
+    <!-- JavaScript modules -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pdf-screenshot-helper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pdf-debug.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pdf-helper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pdf-viewer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+      // Prevent arrow key input for all course-code and section fields
+      function preventArrowKeys(e) {
+        if (
+          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
+        ) {
+          e.preventDefault();
+        }
+      }
+      function applyArrowKeyPrevention() {
+        document.querySelectorAll(".course-code, .section").forEach((input) => {
+          input.removeEventListener("keydown", preventArrowKeys);
+          input.addEventListener("keydown", preventArrowKeys);
+        });
+      }
+      document.addEventListener("DOMContentLoaded", applyArrowKeyPrevention);
+      document.addEventListener("click", function (e) {
+        if (
+          e.target.classList.contains("add-course") ||
+          e.target.id === "add-more-btn"
+        ) {
+          setTimeout(applyArrowKeyPrevention, 100);
+        }
+      });
+    </script>
+  </body>
+</html>
